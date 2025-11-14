@@ -11,7 +11,8 @@ services:
       - key: PORT
         value: 8080
       - key: DATABASE_URL
-        value: jdbc:postgresql://dpg-d4baveje5dus73ehg0k0-a:5432/bd_outfitfinder
+        value:
+          jdbc:postgresql://dpg-d4baveje5dus73ehg0k0-a.internal:5432/bd_outfitfinder
       - key: DATABASE_USERNAME
         value: backend_admin
       - key: DATABASE_PASSWORD
