@@ -9,8 +9,9 @@ FROM amazoncorretto:17
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 
-ENV DATABASE_URL=jdbc:postgresql://localhost:5432/bd_OutfitFinder
-ENV DATABASE_USERNAME=postgres
+ENV DATABASE_URL=jdbc:postgresql://dpg-d4baveje5dus73ehg0k0-a.db.render.com:5432/bd_outfitfinder
+ENV DATABASE_USERNAME=backend_admin
+ENV DATABASE_PASSWORD=jPcXBKOWl5v1JaxfGN0qmtIvN8isFEXK
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]
