@@ -11,6 +11,7 @@
 	<groupId>com.example</groupId>
 	<artifactId>proyectoFinal</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 	<name>proyectoFinal</name>
 	<description>Proyecto Final Frontend</description>
 	<url/>
@@ -96,11 +97,13 @@
 	</dependencies>
 
 	<build>
+			<finalName>backend-proyectoFinal</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
+
 					<annotationProcessorPaths>
 						<path>
 							<groupId>org.projectlombok</groupId>

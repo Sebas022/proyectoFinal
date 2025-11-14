@@ -3,9 +3,17 @@ services:
     name: proyecto-final-backend
     env: java
     plan: free
-    buildCommand: ./mvnw clean install
-    startCommand: java -jar target/*.jar
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -jar target/backend-proyectoFinal.jar
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
+      - key: PORT
+        value: 8080
+      - key: DATABASE_URL
+        value: jdbc:postgresql://dpg-abc123.render.com:5432/bd_outfitfinder
+      - key: DATABASE_USERNAME
+        value: postgres
+      - key: DATABASE_PASSWORD
+        value: admin
     autoDeploy: true
