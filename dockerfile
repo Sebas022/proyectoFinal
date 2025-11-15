@@ -12,5 +12,4 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-# Esto permite leer variables de entorno correctamente
 ENTRYPOINT ["sh", "-c", "java -jar app.jar"]
