@@ -26,10 +26,29 @@ public class JwtFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String path = request.getServletPath();
+
+        // Rutas públicas que NO deben pasar por validación JWT
+        if (path.startsWith("/api/v1/users") ||
+                path.startsWith("/api/v1/clothes") ||   // ← TU RUTA PUBLICA
+                path.startsWith("/swagger-ui") ||
+                path.startsWith("/v3/api-docs") ||
+                path.equals("/") ) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // ---------------------------------------------
+        // VALIDACIÓN NORMAL DE JWT (tu código original)
+        // ---------------------------------------------
 
         String authHeader = request.getHeader("Authorization");
-        if(StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ")){
+
+        if (StringUtils.isEmpty(authHeader) || !StringUtils.startsWith(authHeader, "Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -37,19 +56,22 @@ public class JwtFilter extends OncePerRequestFilter {
         String jwt = authHeader.substring(7);
         String email = jwtService.extractEmail(jwt);
 
-        if(Objects.nonNull(email) && SecurityContextHolder.getContext().getAuthentication() == null){
+        if (Objects.nonNull(email) && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        if(jwtService.validateToken(jwt, userDetails)){
-            SecurityContext securityContext = SecurityContextHolder.getContext();
-            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-                userDetails.getUsername(),null,userDetails.getAuthorities()
-            );
-            securityContext.setAuthentication(auth);
-            SecurityContextHolder.setContext(securityContext);
-            System.out.println("Token extraído: " + email);
-            System.out.println("Auth: " + SecurityContextHolder.getContext().getAuthentication());
-             }
+
+            if (jwtService.validateToken(jwt, userDetails)) {
+                UsernamePasswordAuthenticationToken auth =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails.getUsername(),
+                                null,
+                                userDetails.getAuthorities()
+                        );
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
         }
-        filterChain.doFilter(request , response);
+
+        filterChain.doFilter(request, response);
     }
+
 }

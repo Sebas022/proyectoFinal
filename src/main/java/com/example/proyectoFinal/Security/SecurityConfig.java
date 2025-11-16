@@ -1,7 +1,6 @@
 package com.example.proyectoFinal.Security;
 
 import com.example.proyectoFinal.Dto.ResponseBase;
-import com.example.proyectoFinal.Security.JwtFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -44,14 +43,21 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
                 .authorizeHttpRequests(request -> request
+                        // archivos estáticos
                         .requestMatchers("/", "/index.html", "/static/**", "/css/**",
                                 "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/swagger-ui/**",
-                                "/api/v1/users/**",
-                                "/api/v1/clothes/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**").permitAll()
+
+                        // swagger
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**",
+                                "/swagger-resources/**", "/webjars/**").permitAll()
+
+                        // login / register
+                        .requestMatchers("/api/v1/users/**").permitAll()
+
+                        // 🔥 PERMITIR clothes SIN RESTRICCIONES
+                        .requestMatchers("/api/v1/clothes/**").permitAll()
+
+                        // cualquier otra ruta requiere autenticación
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(manager ->
@@ -94,15 +100,12 @@ public class SecurityConfig {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
-    // 🚀 CORS GLOBAL — requerido para Render
+    // CORS GLOBAL CORREGIDO
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
 
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // 🔥 Permite cualquier origen (solo durante desarrollo)
-        configuration.addAllowedOriginPattern("*");
-
+        configuration.setAllowedOriginPatterns(List.of("*"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
