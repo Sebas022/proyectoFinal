@@ -26,42 +26,59 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
     private final JwtFilter jwtFilter;
     private final UserDetailsService userDetailsService;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
 
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(request -> request
+
+                .authorizeHttpRequests(auth -> auth
+                        // FRONTEND ASSETS
                         .requestMatchers("/", "/index.html", "/static/**", "/css/**",
                                 "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/swagger-ui/**","api/v1/users/**","/api/v1/clothes/**",
-                                "/v3/api-docs/**",
-                                "/swagger-resources/**",
-                                "/webjars/**").permitAll()
-                        .requestMatchers( "/api/v1/movies/**")
-                        .hasAnyAuthority("ADMIN")
+
+                        // Swagger público
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**",
+                                "/swagger-resources/**", "/webjars/**").permitAll()
+
+                        // USERS (login, register) — deben ser PUBLICOS
+                        .requestMatchers("/api/v1/users/**").permitAll()
+
+                        // CLOTHES — dejar completamente PUBLICO
+                        .requestMatchers("/api/v1/clothes/**").permitAll()
+
+                        // todo lo demás requiere autenticación
                         .anyRequest().authenticated()
                 )
-                .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+
                 .authenticationProvider(authenticationProvider())
+
+                // JWT filter (funcionará pero respetará rutas públicas)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex -> ex .accessDeniedHandler(((request, response, accessDeniedException) -> {
+
+                .exceptionHandling(ex -> ex.accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             response.setContentType("application/json");
-                            ResponseBase error = new ResponseBase(403,"No tienes los permisos necesarios para realizar esta operación");
+                            ResponseBase error = new ResponseBase(403,
+                                    "No tienes los permisos necesarios para realizar esta operación");
 
                             ObjectMapper mapper = new ObjectMapper();
                             response.getWriter().write(mapper.writeValueAsString(error));
                         })
+                );
 
-                ));
         return httpSecurity.build();
     }
 
     @Bean
-    public AuthenticationProvider authenticationProvider(){
+    public AuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
         authenticationProvider.setUserDetailsService(userDetailsService);
         authenticationProvider.setPasswordEncoder(passwordEncoder());
@@ -69,13 +86,13 @@ public class SecurityConfig {
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception{
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
-
 }
