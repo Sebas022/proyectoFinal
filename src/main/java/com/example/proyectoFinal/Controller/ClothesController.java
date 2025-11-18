@@ -32,6 +32,11 @@ public class ClothesController {
         return clotheService.updateClothe(id, request);
     }
 
+    @GetMapping("/{id}")
+    public ResponseBase getById(@PathVariable UUID id) {
+        return clotheService.getClotheById(id);
+    }
+    
     @DeleteMapping("/{id}")
     public ResponseBase delete(@PathVariable UUID id) {
         return clotheService.deleteClothe(id);
